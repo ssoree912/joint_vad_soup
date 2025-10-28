@@ -1,0 +1,12 @@
+data/weakly_ShanghaiTech/pose
+data/weakly_ShanghaiTech/features
+
+data/weakly_UBnormal/pose
+data/weakly_UBnormal/features
+pretrained_models/
+runs/
+
+**/__pycache__/
+**/__MACOSX
+checkpoints/
+

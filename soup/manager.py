@@ -608,14 +608,14 @@ class FisherSoupManager:
         metrics["neg_entropy"] = metrics.get("neg_entropy", 0.0)
         bundle = MetricBundle(raw=metrics)
 
-        roc_info = {"scores": None, "gt": None}
-        auc = 0.0
+        roc_info = {"scores": None, "gt": None, "auc": 0.0}
         if collect_roc:
             test_scores = trainer.test()
             auc, roc_scores, roc_gt = score_dataset(test_scores, dataset["test"].metadata, args=args_clone)
             roc_info["scores"] = roc_scores
             roc_info["gt"] = roc_gt
-        return bundle, training_scores, nll_values, roc_info | {"auc": auc}
+            roc_info["auc"] = auc
+        return bundle, training_scores, nll_values, roc_info
 
     def _evaluate_weakly_state(self, args, pseudo_idx, state_dict):
         device = torch.device(args.device if torch.cuda.is_available() else "cpu")

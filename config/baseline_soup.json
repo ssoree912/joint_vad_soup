@@ -1,0 +1,9 @@
+{
+  "experiment_variant": "baseline",
+  "occ": {
+    "candidate_seeds": [111, 222, 333]
+  },
+  "weakly": {
+    "candidate_seeds": [111, 222, 333]
+  }
+}

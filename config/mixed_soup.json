@@ -1,0 +1,31 @@
+{
+  "experiment_variant": "mixed",
+  "occ": {
+    "candidate_seeds": [111, 111, 111],
+    "pruning": {
+      "magnitude_ratio": 0.05,
+      "random_ratio": 0.05,
+      "mode": "unstructured",
+      "keep_mask_fraction": 1.0,
+      "magnitude_seed": 111,
+      "random_seed_mode": "pool",
+      "random_seed_pool": [111, 222, 333]
+    }
+  },
+  "weakly": {
+    "candidate_seeds": [111, 111, 111],
+    "pruning": {
+      "magnitude_ratio": 0.05,
+      "random_ratio": 0.05,
+      "mode": "unstructured",
+      "keep_mask_fraction": 1.0,
+      "magnitude_seed": 111,
+      "random_seed_mode": "pool",
+      "random_seed_pool": [111, 222, 333]
+    }
+  },
+  "mixed_schedule": {
+    "occ": [0.1, 0.1, 0.0, 0.0, 0.0, 0.0],
+    "weakly": [0.1, 0.1, 0.0, 0.0, 0.0, 0.0]
+  }
+}

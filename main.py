@@ -18,11 +18,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args = init_sub_args(args)
     pseudo_weight=None
-    writer = SummaryWriter()
-    root_checkpoint_path = 'checkpoints/'
-    project_checkpoint_path = os.path.join(root_checkpoint_path, args.mode+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
-    if not os.path.exists(project_checkpoint_path):
-        os.makedirs(project_checkpoint_path, exist_ok=True) 
+    run_timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+    root_checkpoint_path = args.output_dir
+    project_checkpoint_path = os.path.join(root_checkpoint_path, args.mode + run_timestamp)
+    os.makedirs(project_checkpoint_path, exist_ok=True)
+    tb_dir = os.path.join(project_checkpoint_path, "tensorboard")
+    writer = SummaryWriter(log_dir=tb_dir)
     
     if args.seed == 1000:  # Record and init seed
         args.seed = torch.initial_seed()
@@ -40,6 +41,16 @@ if __name__ == '__main__':
         if args.soup_config.lower() == "default":
             config_path = None
         soup_config = load_soup_config(config_path)
+        if config_path:
+            try:
+                shutil.copy(config_path, os.path.join(project_checkpoint_path, os.path.basename(config_path)))
+            except FileNotFoundError:
+                pass
+    if soup_config is not None:
+        roc_dir = soup_config.setdefault("roc", {}).get("output_dir")
+        custom_roc_dir = os.path.join(project_checkpoint_path, "roc")
+        soup_config["roc"]["output_dir"] = custom_roc_dir
+        os.makedirs(custom_roc_dir, exist_ok=True)
     soup_manager = FisherSoupManager(soup_config, writer=writer)
 
     balance = Balance(args=args)

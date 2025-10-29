@@ -11,6 +11,7 @@ def init_parser(default_data_dir='data/', default_exp_dir='data/exp_dir'):
     parser.add_argument('--rgb-list', help='list of rgb features ')
     parser.add_argument('--test-rgb-list', help='list of test rgb features')
     parser.add_argument('--mode', default='unsupervised',help='unsupervised')
+    parser.add_argument('--soup-config', type=str, default=None, help='Path to Fisher soup JSON config')
     # parser.add_argument('--rgb-list', default='list/ubnormal-i3d-train-10crop.list', help='list of rgb features ')
     # parser.add_argument('--test-rgb-list', default='list/ubnormal-i3d-test-10crop.list', help='list of test rgb features ')
     parser.add_argument('--data_dir', type=str, default=default_data_dir, metavar='DATA_DIR', help="Path to directory holding .npy and .pkl files (default: {})".format(default_data_dir))

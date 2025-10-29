@@ -1,9 +1,8 @@
-import matplotlib.pyplot as plt
 import torch
 from sklearn.metrics import auc, roc_curve, precision_recall_curve
 import numpy as np
 
-def test(dataloader, model, args, device, update=False):
+def test(dataloader, model, args, device, update=False, return_curve=False):
     with torch.no_grad():
         model.eval()
         pred = torch.zeros(0, device=device)
@@ -33,6 +32,8 @@ def test(dataloader, model, args, device, update=False):
             pr_auc = auc(recall, precision)
             # np.save('precision.npy', precision)
             # np.save('recall.npy', recall)
+            if return_curve:
+                return rec_auc, fpr, tpr
             return rec_auc
         # testing on training set
         else:

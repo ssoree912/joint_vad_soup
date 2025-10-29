@@ -1,0 +1,74 @@
+{
+  "experiment_variant": "baseline",
+  "seed": 111,
+  "occ": {
+    "candidate_seeds": [111, 222, 333],
+    "max_batches": 80,
+    "fisher_floor": 1e-6,
+    "normalize_fisher": true,
+    "coefficient_strategy": "random",
+    "n_coefficient_candidates": 40,
+    "pruning": {
+      "magnitude_ratio": 0.0,
+      "random_ratio": 0.0,
+      "mode": "unstructured",
+      "keep_mask_fraction": 1.0,
+      "magnitude_seed": null,
+      "random_seed_mode": "aligned",
+      "random_seed_offset": 0,
+      "random_seed_pool": []
+    }
+  },
+  "weakly": {
+    "candidate_seeds": [111, 222, 333],
+    "max_batches": 80,
+    "fisher_floor": 1e-6,
+    "normalize_fisher": true,
+    "coefficient_strategy": "random",
+    "n_coefficient_candidates": 40,
+    "pruning": {
+      "magnitude_ratio": 0.0,
+      "random_ratio": 0.0,
+      "mode": "unstructured",
+      "keep_mask_fraction": 1.0,
+      "magnitude_seed": null,
+      "random_seed_mode": "aligned",
+      "random_seed_offset": 0,
+      "random_seed_pool": []
+    },
+    "topk": 8
+  },
+  "mixed_schedule": {
+    "occ": [0.1, 0.05, 0.0, 0.0, 0.0, 0.0],
+    "weakly": [0.1, 0.05, 0.0, 0.0, 0.0, 0.0]
+  },
+  "objective": {
+    "lambdas": {
+      "margin": 0.7,
+      "entropy": 0.7,
+      "consistency": 0.7
+    }
+  },
+  "logging": {
+    "enable_tensorboard": true,
+    "occ_metrics": {
+      "nll_mean": "metrics/occ/nll_mean",
+      "nll_var": "metrics/occ/nll_var",
+      "j_score": "metrics/occ/j_score"
+    },
+    "weakly_metrics": {
+      "topk_margin": "metrics/weakly/topk_margin",
+      "entropy": "metrics/weakly/entropy",
+      "j_score": "metrics/weakly/j_score"
+    },
+    "consistency_metrics": {
+      "delta_score": "metrics/consistency/delta_score",
+      "index_retention": "metrics/consistency/index_retention"
+    }
+  },
+  "roc": {
+    "output_dir": "results",
+    "occ_filename": "occ_roc_round_{round}.json",
+    "weakly_filename": "weakly_roc_round_{round}.json"
+  }
+}

@@ -159,6 +159,7 @@ class Trainer:
         self.model.to(self.args.device)
         pbar = tqdm(self.train_test_loader)
         probs = torch.empty(0).to(self.args.device)
+        nll_values = torch.empty(0).to(self.args.device)
         print("Starting test on training set")
         for itern, data_arr in enumerate(pbar):
             data = [data.to(self.args.device, non_blocking=True) for data in data_arr]
@@ -172,8 +173,10 @@ class Trainer:
             if self.args.model_confidence:
                 nll = nll * score
             probs = torch.cat((probs, -1 * nll), dim=0)
+            nll_values = torch.cat((nll_values, nll), dim=0)
         prob_mat_np = probs.cpu().detach().numpy().squeeze().copy(order='C')
-        return prob_mat_np
+        nll_np = nll_values.cpu().detach().numpy().squeeze().copy(order='C')
+        return prob_mat_np, nll_np
     
     def test(self):
         self.model.eval()
@@ -195,6 +198,34 @@ class Trainer:
             probs = torch.cat((probs, -1 * nll), dim=0)
         prob_mat_np = probs.cpu().detach().numpy().squeeze().copy(order='C')
         return prob_mat_np
+
+    def collect_nll_distribution(self, loader=None):
+        """
+        Collect raw NLL values for diagnostics (normal segments expected).
+
+        Args:
+            loader: Optional dataloader. Defaults to the train_test loader which
+                    corresponds to normal validation fragments.
+        """
+        if loader is None:
+            loader = self.train_test_loader
+
+        self.model.eval()
+        self.model.to(self.args.device)
+        nll_values = torch.empty(0).to(self.args.device)
+        for data_arr in loader:
+            data = [data.to(self.args.device, non_blocking=True) for data in data_arr]
+            score = data[-3].amin(dim=-1)
+            if self.args.model_confidence:
+                samp = data[0]
+            else:
+                samp = data[0][:, :2]
+            with torch.no_grad():
+                _, nll = self.model(samp.float(), label=torch.ones(data[0].shape[0]), score=score)
+            if self.args.model_confidence:
+                nll = nll * score
+            nll_values = torch.cat((nll_values, nll), dim=0)
+        return nll_values.cpu().detach().numpy().squeeze().copy(order="C")
 
     def gen_checkpoint_state(self, epoch):
         checkpoint_state = {'epoch': epoch + 1,

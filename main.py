@@ -1,16 +1,17 @@
-import torch
-from Occ.train_eval import Occ
-from Weakly.train_eval import Weakly
-import numpy as np
-from main_args import init_parser,init_sub_args
-from Occ.utils.data_utils import trans_list
-from Occ.dataset import get_Occ_dataset
-from utils.data_process import Balance
-from torch.utils.tensorboard import SummaryWriter
 import os
-import time
 import random
 import shutil
+import time
+
+import numpy as np
+import torch
+from torch.utils.tensorboard import SummaryWriter
+
+from Occ.dataset import get_Occ_dataset
+from Occ.utils.data_utils import trans_list
+from main_args import init_parser, init_sub_args
+from soup import FisherSoupManager, load_soup_config
+from utils.data_process import Balance
 if __name__ == '__main__':
     start_time = time.time()
     parser = init_parser()
@@ -32,6 +33,14 @@ if __name__ == '__main__':
         # torch.backends.cudnn.benchmark = True
         torch.manual_seed(args.seed)
         np.random.seed(0)
+
+    soup_config = None
+    if args.soup_config:
+        config_path = args.soup_config
+        if args.soup_config.lower() == "default":
+            config_path = None
+        soup_config = load_soup_config(config_path)
+    soup_manager = FisherSoupManager(soup_config, writer=writer)
 
     balance = Balance(args=args)
 
@@ -55,15 +64,36 @@ if __name__ == '__main__':
             Occ_load = True if os.path.isfile(os.path.join(dir_best_record,'Occ_epoch_final_checkpoint.pth.tar')) else False
             Weakly_load = True if os.path.isfile(os.path.join(dir_best_record,'Weakly_epoch_final_checkpoint.pkl')) else False
             step_best = False
-            Occ_scores, Occ_auc = Occ(Occ_args=args,dataset=Occ_dataset,pseudo_weight=pseudo_weight,dir_best_record=dir_best_record,load=Occ_load,writer=writer,steps=step)
+            round_idx = epoch * 6 + step
+            Occ_scores, Occ_auc, occ_details = soup_manager.run_occ_round(
+                args=args,
+                dataset=Occ_dataset,
+                pseudo_weight=pseudo_weight,
+                dir_best_record=dir_best_record,
+                load=Occ_load,
+                writer=writer,
+                steps=step,
+                round_idx=round_idx,
+            )
             # update the global best checkpoint
             if Occ_auc > balance.best_occ_auc:
                 shutil.copy(os.path.join(dir_best_record, 'Occ_epoch_final_checkpoint.pth.tar'),occ_best_auc_path)
                 balance.best_occ_auc = Occ_auc
             pseudo_idx,Occ_indices,Occ_frame_idx = balance.Occ_to_Weakly(fragment=Occ_scores)
-            Weakly_scores, ws_auc= Weakly(Weakly_args=args,pseudo_idx=pseudo_idx,dir_best_record=dir_best_record,load=Weakly_load,writer=writer,steps=step)
+            Weakly_scores, ws_auc, weakly_details = soup_manager.run_weakly_round(
+                args=args,
+                pseudo_idx=pseudo_idx,
+                dir_best_record=dir_best_record,
+                load=Weakly_load,
+                writer=writer,
+                steps=step,
+                round_idx=round_idx,
+            )
             if ws_auc > balance.best_ws_auc:
-                shutil.copy(os.path.join(dir_best_record,'Weakly_inner_best_checkpoint.pkl'),ws_best_auc_path)
+                best_checkpoint = os.path.join(dir_best_record,'Weakly_inner_best_checkpoint.pkl')
+                if not os.path.isfile(best_checkpoint):
+                    best_checkpoint = os.path.join(dir_best_record,'Weakly_epoch_final_checkpoint.pkl')
+                shutil.copy(best_checkpoint,ws_best_auc_path)
                 balance.best_ws_auc = ws_auc
             pseudo_weight = balance.Weakly_to_Occ(Weakly_scores=Weakly_scores)
             balance.Update_weights(cur_Occ_weights=Occ_indices,cur_Weakly_weights=Weakly_scores,cur=True)
@@ -89,6 +119,3 @@ if __name__ == '__main__':
     print("\033[92m Done with {}% AuC for Ws Models\033[0m".format(balance.best_ws_auc * 100))
     print("\033[92m The whole process time: {} seconds\033[0m".format(process_time))
     print("-------------------------------------------------------\n\n")
-
-
-

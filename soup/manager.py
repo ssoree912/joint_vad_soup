@@ -587,6 +587,8 @@ class FisherSoupManager:
             load=False,
         )
         trainer.model.load_state_dict(state_dict, strict=False)
+        if hasattr(trainer.model, "set_actnorm_init"):
+            trainer.model.set_actnorm_init()
         normality_scores, nll_values = trainer.training_scores_producer()
         training_scores = training_score_dataset(normality_scores, dataset["train_test"].metadata, args=args_clone)
 

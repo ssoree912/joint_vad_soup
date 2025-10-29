@@ -1,9 +1,9 @@
 {
   "experiment_variant": "baseline",
   "occ": {
-    "candidate_seeds": [111, 222, 333]
+    "candidate_seeds": [2023, 2024, 2025]
   },
   "weakly": {
-    "candidate_seeds": [111, 222, 333]
+    "candidate_seeds": [2023, 2024, 2025]
   }
 }
